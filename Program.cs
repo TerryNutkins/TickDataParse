@@ -19,7 +19,7 @@ namespace TickDataParse
 
             
 
-            Dictionary<string, string> orders = new Dictionary<string, string>();
+            Dictionary<int, Order> orders = new Dictionary<int, Order>();
             //Read all but first line
             //https://msdn.microsoft.com/en-GB/library/ezwyzy7b.aspx
             string[] lines = System.IO.File.ReadAllLines(@"C:\Noel\CodingRepository\TickDataParse\AAPL20130730nasdaq.txt").Skip(1).ToArray();
@@ -32,10 +32,47 @@ namespace TickDataParse
             {
                 string[] splitLines = line.Split(',');
 
-                if (splitLines.Length==1)
+                int TimeInMilliSecondsFromMidnight = Convert.ToInt32(splitLines[0]);
+                int orderID = Convert.ToInt32(splitLines[1]);
+                char action = Convert.ToChar(splitLines[2]);
+
+                switch (action)
                 {
-                    Console.WriteLine("Ignoring line as it has only one value");
+
+                    //Buy/Sell
+                    case 'B':
+                    case 'S':
+                        {
+                            orders.Add(orderID, new Order(orderID));
+                            Console.WriteLine(string.Format("Addin"));
+                            break;
+                        }
+                  //Delete order
+                    case 'D':
+                        {
+                            if (!orders.ContainsKey(orderID))
+                                {
+                                throw new Exception(string.Format("Order ID {0} not found to delete", orderID));
+                                }
+                            orders.Remove(orderID);
+                            break;
+
+                        }
+                    //Order fully filled
+                    case 'F':
+
+                    default:
+                        {
+                            if (!orders.ContainsKey(orderID))
+                            {
+                                throw new Exception(string.Format("Order ID {0} not found to fill", orderID));
+                            }
+                            throw new Exception("Request type not found");
+                        }
                 }
+
+                
+
 
             }
 
